@@ -162,6 +162,19 @@ module ActiveRecord
           evaluate_attribute_method attr_name, "def #{attr_name}; unserialize_attribute('#{attr_name}'); end"
         end
 
+        # Defined for all serialized attributes. Disallows assigning already serialized YAML.
+        def define_write_method_for_serialized_attribute(attr_name)
+          method_body = <<-EOV
+            def #{attr_name}=(value)
+              if value.is_a?(String) and value =~ /^---/
+                raise ActiveRecordError, "You tried to assign already serialized content to #{attr_name}. This is disabled due to security issues."
+              end
+              write_attribute(:#{attr_name}, value)
+            end
+          EOV
+          evaluate_attribute_method attr_name, method_body, "#{attr_name}="
+        end
+
         # Defined for all +datetime+ and +timestamp+ attributes when +time_zone_aware_attributes+ are enabled.
         # This enhanced read method automatically converts the UTC time stored in the database to the time zone stored in Time.zone.
         def define_read_method_for_time_zone_conversion(attr_name)
