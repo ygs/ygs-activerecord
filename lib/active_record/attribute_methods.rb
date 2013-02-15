@@ -71,7 +71,7 @@ module ActiveRecord
         columns_hash.each do |name, column|
           unless instance_method_already_implemented?(name)
             if self.serialized_attributes[name]
-              define_read_method_for_serialized_attribute(name)
+              define_write_method_for_serialized_attribute(name)
             elsif create_time_zone_conversion_attribute?(name, column)
               define_read_method_for_time_zone_conversion(name)
             else
